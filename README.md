@@ -1,227 +1,194 @@
-# Predictive Maintenance – Data Understanding, Preparation, Modeling & Evaluation
+```md
+# 🏭 Predictive Maintenance: A CRISP-ML(Q) Approach
 
 <!-- 
-  Welcome to the Predictive Maintenance project README! 
-  This document focuses on Data Understanding, Data Preparation, Modeling, and Evaluation, 
-  based on the content of our scientific work. 
+  This README is part of a scientific project focusing on predictive maintenance. 
+  It identifies machine failures using sensor data and applies CRISP-ML(Q) methodology. 
+  Please feel free to explore and adapt the provided materials. 
 -->
 
-> **Note**  
-> This repository explores how to detect machine failures using sensor data through various classification models. It focuses on the essential steps of data processing, model building, and evaluation.
+## 🎯 Project Overview
 
----
-## Table of Contents
-1. [Data Understanding](#data-understanding-🔎)
-2. [Data Preparation](#data-preparation-🛠)
-3. [Modeling](#modeling-🤖)
-4. [Evaluation](#evaluation-📊)
-5. [How to Run](#how-to-run-▶️)
-6. [References & Further Reading](#references--further-reading-📚)
+Welcome to our Predictive Maintenance project! This repository demonstrates how machine learning and data-driven analysis can anticipate equipment failures before they cause costly downtime. By collecting and processing sensor data, we aim to **detect** and **classify** machine failures early so maintenance operations can be scheduled proactively.
 
----
+<details>
+<summary>🔎 Quick Facts</summary>
 
-## Data Understanding 🔎
-
-In our project, we analyze **synthetically generated sensor data** for milling machines, aiming to classify **five failure categories** plus a *no_failure* case. The dataset characteristics can be summarized as follows:
-
-- **Sensor Features**:  
-  - *air temperature [K]* (mean ~300K, σ=2)  
-  - *process temperature [K]* (air temperature + 10K, σ=1)  
-  - *rotational speed [rpm]* (mean ~1500, σ=300)  
-  - *torque [Nm]* (mean ~40, σ=10)  
-  - *tool wear [min]* (range: 10–200)  
-
-- **Categorical Variables**:  
-  - *machine type* (L, M, H)  
-  - *machine failure* (binary indicator)  
-
-- **Failure Classes**:  
-  - `TWF` = Tool Wear Failure  
-  - `HDF` = Heat Dissipation Failure  
-  - `PWF` = Power Failure  
-  - `OSF` = Overstrain Failure  
-  - `RNF` = Random Failures  
-  - `no_failure` = No machine failure  
-
-> :bulb: **Tip:**  
-> Our analyses revealed strong **class imbalance** (only ~3.39% failures overall), which influences the choice of data preparation techniques.
-
-### Statistical Insights
-- Certain failure types appear at specific sensor ranges:
-  - **HDF**: Occurs more frequently at higher temperatures.
-  - **PWF**: Often at higher rotational speeds (> 1900 rpm).
-  - **TWF** & **OSF**: Linked to higher tool wear (> 172 min).
-- Strong negative correlation between **torque** and **rotational speed** (r ≈ -0.88).
-- No missing or invalid data thanks to a well-crafted synthetic generation process.
+- **Focus**: Classification of machine failures using ML  
+- **Data**: Synthetic data with multiple failure labels  
+- **Methodology**: CRISP-ML(Q) (adapted without model maintenance)  
+- **Techniques**: Oversampling (SMOTETomek), Classification algorithms (Random Forest, KNN, Decision Tree)  
+- **Key Metric**: F1-score (balancing Precision & Recall)  
+- **Goal**: Identify failure roots precisely, thereby reducing unplanned downtime  
+</details>
 
 ---
 
-## Data Preparation 🛠
-
-Data preparation ensures the dataset is **cleaned**, **transformed**, and **standardized** for modeling:
-
-1. **Data Import and Type Assignment**  
-   We import the data with manual dtype specifications:
-   ```python
-   import pandas as pd
-
-   # Example: Setting correct types during CSV import
-   df = pd.read_csv(
-       "predictive_maintenance.csv",
-       dtype={
-           "type": "category",
-           "machine failure": "bool",
-           "air temperature [K]": "float32",
-           "process temperature [K]": "float32",
-           "rotational speed [rpm]": "float32",
-           "torque [Nm]": "float32",
-           "tool wear [min]": "float32"
-       }
-   )
-   ```
-
-2. **One-Hot Encoding**  
-   - We convert the categorical `machine type` (L, M, H) into dummy variables: `Type_L`, `Type_M`, `Type_H`.
-
-3. **New Target Variable**  
-   - We create a single target column `label` with six categories: `TWF`, `HDF`, `PWF`, `OSF`, `RNF`, and `no_failure`.
-
-4. **Train-Test Split**  
-   - We split the data into **80% training** and **20% test** (e.g., `train_test_split` from scikit-learn).
-
-5. **Oversampling**  
-   - The classes are **highly imbalanced**. To address this, we apply SMOTETomek *only on training data*, preserving the original distribution in the test set:
-     ```python
-     from imblearn.combine import SMOTETomek
-
-     sm = SMOTETomek(random_state=42)
-     X_resampled, y_resampled = sm.fit_resample(X_train, y_train)
-     ```
-
-6. **Feature Scaling**  
-   - All **numeric features** are standardized via `StandardScaler` (mean=0, std=1) to ensure uniform scaling:
-     ```python
-     from sklearn.preprocessing import StandardScaler
-
-     scaler = StandardScaler()
-     X_train_scaled = scaler.fit_transform(X_resampled)
-     X_test_scaled = scaler.transform(X_test)
-     ```
-
-> <!-- GitHub markdown comment -->  
-> **Comment**: We store the processed data in `dataset_train_resampled.csv` and `dataset_test.csv` for quick reloading.
+## 📝 Table of Contents
+1. [Introduction](#introduction)  
+2. [Methodology](#methodology)  
+   - [1. Business Understanding](#1-business-understanding)  
+   - [2. Data Understanding](#2-data-understanding)  
+   - [3. Data Preparation](#3-data-preparation)  
+   - [4. Model Building](#4-model-building)  
+   - [5. Evaluation](#5-evaluation)  
+3. [Installation & Usage](#installation--usage)  
+4. [Tips & Tricks](#tips--tricks)  
+5. [Conclusions & Outlook](#conclusions--outlook)  
+6. [License](#license)  
 
 ---
 
-## Modeling 🤖
+## Introduction
 
-### Problem Definition
-We frame this as a **multiclass classification** task with six target labels. Our goal is to predict one of the five failure types or `no_failure`.
+Predictive Maintenance leverages **sensor data** and **machine learning** models to detect anomalies and forecast potential failures. Our approach uses **CRISP-ML(Q)** as a guideline to ensure transparent and iterative ML development. The goal is to proactively replace parts or schedule machine servicing before major breakdowns occur.
 
-### Algorithms & Hyperparameter Tuning
-We trained **seven models**:
+> **Comment**: <!-- This section gives a concise overview of how we combine data science with operational needs. -->
 
-1. **Logistic Regression**  
-2. **Random Forest**  
-3. **Support Vector Machine (SVM)**  
-4. **K-Nearest Neighbors (KNN)**  
-5. **Decision Tree**  
-6. **KNN with optimal K**  
-7. **Pruned Decision Tree**
+---
 
-**Grid Search** with cross-validation (5-fold) was performed to optimize key hyperparameters. For example, we tuned:
-- `n_estimators`, `max_depth` in **Random Forest**.
-- `n_neighbors` in **KNN**.
-- `ccp_alpha` for **Decision Tree Pruning**.
+## Methodology
+
+### 1. Business Understanding
+
+- **Objective**: Early identification of machine failures to reduce downtime and maintenance costs.  
+- **Business Need**: Minimize production stoppages, avoid catastrophic failures, and optimize resource usage.
+
+### 2. Data Understanding
+
+- **Data Source**: Synthetic dataset representing sensor readings from a milling machine.  
+- **Size**: ~10,000 rows × 14 columns.  
+- **Class-Imbalance**: Only ~3.39% of all rows contain a failure → Imbalanced dataset.  
+- **Failure Types**:  
+  - Tool wear failure  
+  - Heat dissipation failure  
+  - Power failure  
+  - Overstrain failure  
+  - Random failures  
+
+### 3. Data Preparation
+
+1. **Categorical Encoding**:  
+   - One-Hot-Encoding for machine type (e.g., Type_H, Type_M, Type_L).
+2. **Label Creation**:  
+   - Combine multiple failure flags (tool wear, power, heat dissipation, etc.) into one label column. 
+3. **Train-Test Split**:  
+   - 80% training, 20% test.
+4. **Oversampling with SMOTETomek**:  
+   - Handle imbalanced classes by adding synthetic minority samples.
+5. **Scaling**:  
+   - StandardScaler to normalize sensor values without losing overall distribution.
+
+### 4. Model Building
+
+- **Main Algorithms**:  
+  1. **Decision Tree** (with pruning via `ccp_alpha`)  
+  2. **Random Forest** (optimized via grid search over `n_estimators`, `max_depth`, `min_samples_split`, etc.)  
+  3. **K-Nearest Neighbors** (optimized for best `k`)  
+
+- **Hyperparameter Tuning**:  
+  - Performed using grid search + 5-fold cross-validation to find best performance on the training data.
+
+<details>
+<summary>📌 Example Model Training Code (Python)</summary>
 
 ```python
-from sklearn.model_selection import GridSearchCV
-from sklearn.ensemble import RandomForestClassifier
+# Example code snippet for Random Forest training
 
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import GridSearchCV
+
+# Define parameter grid
 param_grid = {
-    'n_estimators': [100, 200],
-    'max_depth': [10, 20, None],
-    'min_samples_split': [2, 5]
+    'n_estimators': [50, 100],
+    'max_depth': [5, 10, None],
+    'min_samples_split': [2, 5],
+    'min_samples_leaf': [1, 2]
 }
 
-rf = RandomForestClassifier(random_state=42)
-grid_search = GridSearchCV(rf, param_grid, cv=5, scoring='f1_macro')
-grid_search.fit(X_train_scaled, y_resampled)
+rf_model = RandomForestClassifier(random_state=42)
+grid_search = GridSearchCV(estimator=rf_model,
+                           param_grid=param_grid,
+                           scoring='f1_macro',  # multi-class average F1
+                           cv=5)
 
-best_rf_model = grid_search.best_estimator_
-print("Best Parameters:", grid_search.best_params_)
+grid_search.fit(X_train, y_train)
+
+print("Best Params:", grid_search.best_params_)
+print("Best F1-Score:", grid_search.best_score_)
 ```
+</details>
 
-> :warning: **Hint:**  
-> We used **F1-score** as our primary metric because of the class imbalance and the importance of harmonic mean between precision and recall.
+### 5. Evaluation
 
----
-
-## Evaluation 📊
-
-We evaluated each model on:
-- **Accuracy**
-- **Precision**
-- **Recall**
-- **F1-Score**
-
-| Model                             | F1 (Train) | F1 (Test) |
-|:----------------------------------|:----------:|:---------:|
-| Logistic Regression               | 0.9161     | 0.8664    |
-| Random Forest                     | 1.0000     | 0.9676    |
-| Decision Tree                     | 1.0000     | 0.9621    |
-| Support Vector Machine            | 0.9733     | 0.9052    |
-| K-Nearest Neighbors               | 0.9891     | 0.9346    |
-| **Random Forest (Tuned)**         | **1.0000** | **0.9681**|
-| KNN (optimal K)                   | 1.0000     | 0.9490    |
-| Decision Tree (Pruned)            | 0.9985     | 0.9618    |
-
-### Key Findings
-- **Random Forest with Hyperparameter Tuning** yielded the highest F1-score (≈0.968 on test data).
-- **Oversampling** improved minority class detection without causing overfitting.  
-- **Scatterplots** comparing train vs. test F1-scores showed no major overfitting.
-
-> :heavy_check_mark: **Conclusion**: Random Forest (tuned) is our best model, with strong generalization demonstrated on original test data.
+- **Metrics**:  
+  - **Accuracy**  
+  - **Precision**  
+  - **Recall**  
+  - **F1-Score** (primary metric to balance FN and FP)  
+- **Observations**:  
+  - Random Forest achieved the highest F1-score (~0.968 on test data).  
+  - No strong sign of overfitting despite 1.0 F1 on training set.  
+  - Oversampling maintained the distribution without major distortions.  
 
 ---
 
-## How to Run ▶️
+## Installation & Usage
 
-1. **Clone the Repository**  
+1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-username/PredictiveMaintenance.git
-   cd PredictiveMaintenance
+   git clone https://github.com/your-username/predictive-maintenance-ml.git
+   cd predictive-maintenance-ml
    ```
 
-2. **Install Requirements**  
+2. **Create and activate a virtual environment** (optional but recommended):
+   ```bash
+   python -m venv venv
+   source venv/bin/activate     # On Linux/Mac
+   .\venv\Scripts\activate      # On Windows
+   ```
+
+3. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Data Preprocessing & Modeling**  
-   ```bash
-   python data_preparation.py
-   python model_building.py
-   ```
+4. **Run notebooks or scripts**:
+   - Explore `notebooks/data_preparation.ipynb` for data cleaning and preprocessing.
+   - Run `python src/train_model.py` to train the model and save results.
 
-4. **Evaluation**  
-   ```bash
-   python evaluate_model.py
-   ```
+5. **Check results**:
+   - Evaluation metrics are displayed in your console or Jupyter cells.
+   - Trained model artifacts are stored in `models/`.
 
 ---
 
-## References & Further Reading 📚
+## Tips & Tricks
 
-- **Extracts from the Scientific Work**:  
-  - Our references include the *Predictive Maintenance* project documentation, covering data exploration, modeling, and evaluation steps.
-- **External Libraries**:  
-  - [scikit-learn.org](https://scikit-learn.org/)
-  - [imbalanced-learn.org](https://imbalanced-learn.org/)
+> **:bulb: Tip:** 
+> - Keep an eye on the **class imbalance**. Oversampling or undersampling strategies can significantly affect performance.  
+> - Perform **feature scaling** consistently to avoid data leakage (fit on train set, then apply to test set).
+
+> **⚠️ Caution:** 
+> - Synthetic data may not perfectly represent real-world conditions. Additional tuning or domain expertise is crucial when applying these techniques to a live environment.
 
 ---
 
-> **Disclaimer**  
-> This README is based solely on the **concrete content** of the scientific work. All analysis steps, findings, and discussion points adhere to the original methodology and results. 
+## Conclusions & Outlook
 
-Enjoy exploring predictive maintenance with sensor data! 🚀
+- **Best Model**: Random Forest with hyperparameter tuning.  
+- **Key Benefits**:  
+  - High recall to minimize undetected failures.  
+  - High precision to reduce false alarms.  
+- **Future Work**:  
+  - Apply to **real-world production data** with continuous monitoring.  
+  - Test additional ensemble approaches or deep learning models.  
+  - Integrate with **real-time streaming** for on-the-fly predictions.
+
+---
+
+## License
+
+This repository is available for academic and educational purposes. Please review the [LICENSE](LICENSE) file for more information.  
+Enjoy exploring predictive maintenance! 🚀
+```
