@@ -1,9 +1,3 @@
-```md
-<!--
-  README.md for the Data Understanding, Data Preparation, and Modeling + Evaluation phases
-  of our Predictive Maintenance project. Written in English, with emojis and GitHub Markdown features.
--->
-
 # Predictive Maintenance Project: Data Understanding, Preparation & Modeling
 
 Welcome to our **Predictive Maintenance** repository! This project demonstrates how to predict different machine failure types using a synthetic dataset, following a structured approach inspired by the CRISP-MLQ methodology. This README provides an overview of the **Data Understanding**, **Data Preparation**, and **Modeling + Evaluation** stages.
