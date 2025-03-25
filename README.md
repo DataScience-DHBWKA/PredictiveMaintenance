@@ -1,10 +1,8 @@
 # 🛠️ Predictive Maintenance: A CRISP-ML(Q) Approach
 
-<!-- 
-  This README is part of a scientific project focusing on predictive maintenance. 
-  It identifies machine failures using sensor data and applies CRISP-ML(Q) methodology. 
-  Please feel free to explore and adapt the provided materials. 
--->
+This README is part of a scientific project focusing on predictive maintenance. 
+It identifies machine failures using sensor data and applies CRISP-ML(Q) methodology. 
+Please feel free to explore and adapt the provided materials.
 
 ## 🎯 Project Overview
 
