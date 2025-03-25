@@ -1,5 +1,4 @@
-```md
-# 🏭 Predictive Maintenance: A CRISP-ML(Q) Approach
+# 🛠️ Predictive Maintenance: A CRISP-ML(Q) Approach
 
 <!-- 
   This README is part of a scientific project focusing on predictive maintenance. 
@@ -191,4 +190,3 @@ print("Best F1-Score:", grid_search.best_score_)
 
 This repository is available for academic and educational purposes. Please review the [LICENSE](LICENSE) file for more information.  
 Enjoy exploring predictive maintenance! 🚀
-```
