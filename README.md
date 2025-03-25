@@ -1,146 +1,142 @@
-📊 Predictive Maintenance with Machine Learning
+# 🛠️ Predictive Maintenance with Machine Learning
 
-🎯 Project Overview
+This repository presents a comprehensive machine learning project aimed at identifying machine failures through sensor data analysis. The project follows the structured CRISP-MLQ methodology, emphasizing Data Understanding, Data Preparation, and Modeling with rigorous Evaluation.
 
-This project explores the use of machine learning (ML) techniques to predict machine failures based on sensor data, contributing significantly to reducing unplanned downtime.
+---
 
-📚 Data Understanding
+## 📊 Data Understanding
 
-🔍 Dataset
+> **🔎 Objective:** Exploratory Data Analysis (EDA) to understand feature distributions, detect patterns, and identify correlations.
 
-Source: Synthetic sensor data from milling machines (UCI ML Repository).
+### 📌 Dataset Overview
 
-Features:
+The dataset used contains sensor readings from CNC milling machines, featuring numeric and categorical attributes:
 
-Numerical: Air Temperature, Process Temperature, Rotational Speed, Torque, Tool Wear
+| Feature | Description | Type |
+|---------|-------------|------|
+| air_temperature | Air temperature (in Kelvin) | Numeric |
+| process_temperature | Process temperature (in Kelvin) | Numeric |
+| rotational_speed | Rotational speed (in rpm) | Numeric |
+| torque | Torque (in Nm) | Numeric |
+| tool_wear | Tool wear duration (in minutes) | Numeric |
+| machine_failure | Machine failure status (binary) | Categorical |
 
-Categorical: Machine Type (L/M/H)
+### 📌 Key Insights from EDA
+- 🔥 **Heat Dissipation Failures** correlate strongly with high temperatures.
+- ⚙️ **Power Failures** primarily occur at higher rotational speeds.
+- 🔧 **Tool Wear and Overstrain Failures** appear significantly with higher tool wear durations.
 
-Target Variables: Types of failures (TWF, HDF, PWF, OSF, RNF)
+### 📌 Correlation Highlights
+- Strong negative correlation (ρ = -0.88) between torque and rotational speed.
+- Positive correlation between air and process temperature.
 
-📈 Exploratory Data Analysis (EDA)
+> **💡 Tip:** Always visualize feature distributions and class imbalance early to inform data preparation strategies.
 
-Conducted statistical analyses and created visualizations:
+---
 
-📌 Class imbalance identified (3.39% failure rate)
+## 🧹 Data Preparation
 
-📌 Feature insights: High correlation between rotational speed & torque (-0.88)
+> **🔄 Objective:** Transform raw data into a structured, balanced format suitable for modeling.
 
-📌 Significant patterns:
+### 📌 Steps Taken
 
-HDF occurs at higher temperatures
+1. **Data Import & Type Adjustment**
+```python
+import pandas as pd
 
-PWF linked to higher rotational speeds
+# Explicitly set correct data types for optimization
+ df = pd.read_csv("data.csv", dtype={
+   'air_temperature': 'float32',
+   'machine_failure': 'bool',
+   'type': 'category',
+})
+```
 
-TWF and OSF occur with high tool wear
+2. **Feature Engineering**
+- Categorical variable encoding via One-Hot-Encoding.
+- Created consolidated target variable `label` combining all failure types.
 
-🛠️ Data Preparation
+3. **Addressing Class Imbalance**
+- Applied SMOTETomek Oversampling on training data only to balance class distributions:
+```python
+from imblearn.combine import SMOTETomek
 
-⚙️ Steps Undertaken
+smote_tomek = SMOTETomek(random_state=42)
+X_train_res, y_train_res = smote_tomek.fit_resample(X_train, y_train)
+```
 
-Data Import & Type Adjustment:
+4. **Standardization**
+- Numeric features standardized using `StandardScaler`:
+```python
+from sklearn.preprocessing import StandardScaler
 
-Corrected data types manually during import (e.g., numerical, categorical, binary).
+scaler = StandardScaler()
+X_train_res_scaled = scaler.fit_transform(X_train_res)
+X_test_scaled = scaler.transform(X_test)
+```
 
-Applied one-hot encoding to categorical features.
+> **⚠️ Important:** Do not oversample test data to maintain evaluation validity.
 
-Data Splitting & Oversampling:
+---
 
-Split into Training/Test sets (80:20).
+## 🤖 Modeling & 📐 Evaluation
 
-Applied SMOTETomek to address class imbalance in training set.
+> **🎯 Objective:** Develop and compare machine learning models to accurately classify machine failures.
 
-Data Scaling:
+### 📌 Problem Formulation
+- Multi-class classification problem with 6 distinct classes: TWF, HDF, PWF, OSF, RNF, and No Failure.
 
-StandardScaler used for numerical variables.
+### 📌 Models Implemented
+- Logistic Regression
+- Random Forest (Best Performer 🎉)
+- Decision Tree (with and without pruning)
+- Support Vector Machine (SVM)
+- K-Nearest Neighbors (optimized k)
 
-💾 Resulting Datasets
+### 📌 Hyperparameter Tuning
+- Utilized Grid Search with 5-fold cross-validation:
+```python
+from sklearn.model_selection import GridSearchCV
 
-Training data: dataset_train_resampled.csv
-
-Testing data: dataset_test.csv
-
-🤖 Modeling
-
-🎯 Problem Definition
-
-Multi-class classification (6 categories: TWF, HDF, PWF, OSF, RNF, no_failure)
-
-🧩 Models Implemented
-
-Logistic Regression
-
-Random Forest (with hyperparameter tuning)
-
-Decision Trees (standard & pruned)
-
-Support Vector Machines (SVM)
-
-K-Nearest Neighbors (standard & optimized)
-
-⚙️ Hyperparameter Optimization
-
-Grid Search with 5-fold cross-validation for Random Forest and KNN
-
-Cost-Complexity-Pruning for Decision Trees
-
-🧪 Evaluation
-
-📐 Metrics Used
-
-Accuracy, Precision, Recall, and F1-Score
-
-🥇 Best Performing Model
-
-🌲 Random Forest with Hyperparameter Tuning:
-
-Training F1-Score: 1.000
-
-Testing F1-Score: 0.9681
-
-📊 Scatterplot Analysis
-
-Evaluated consistency between training and test metrics to identify overfitting.
-
-📉 Bias-Variance Tradeoff
-
-Analyzed flexibility parameters influencing model performance.
-
-🗣️ Discussion
-
-Confirmed oversampling improved model generalization without data distortion.
-
-Final evaluation conducted exclusively on original (non-synthetic) test data.
-
-🚀 Conclusions
-
-ML effectively predicts machine failures.
-
-Random Forest with hyperparameter tuning is highly reliable and robust.
-
-Future work: Validation with real industry data and real-time system integration.
-
-📦 Tools & Resources
-
-Python, pandas, imbalanced-learn, scikit-learn
-
-Visualization: Matplotlib, seaborn
-
-🏫 Authors
-
-Daniel Weissenberger
-
-Eduardo Stein Mössner
-
-Jonas Sigmund
-
-👩‍🏫 Supervisor
-
-Prof. Dr. Jennifer Schoch
-
-📅 Date
-
-25.03.2025
-
-🌟 Thanks for exploring our Predictive Maintenance ML Project! 🌟
-
+param_grid = {
+    'n_estimators': [100, 200],
+    'max_depth': [10, 20, None]
+}
+grid_search = GridSearchCV(RandomForestClassifier(), param_grid, scoring='f1_macro', cv=5)
+grid_search.fit(X_train_res_scaled, y_train_res)
+```
+
+### 📌 Evaluation Metrics
+| Model | Accuracy | Precision | Recall | F1-Score |
+|-------|----------|-----------|--------|----------|
+| **Random Forest (Tuned)** | **96.35%** | **97.34%** | **96.35%** | **96.81%** |
+| Decision Tree (Pruned) | 94.95% | 97.52% | 94.95% | 96.18% |
+| SVM | 85.35% | 97.17% | 85.35% | 90.52% |
+
+- Random Forest showed the best balance between Bias and Variance.
+
+### 📌 Bias-Variance Analysis
+- Models with tuned hyperparameters effectively reduced both Bias and Variance, enhancing generalization.
+
+### 📌 Insights from Oversampling
+- Boxplot analysis confirmed oversampling did not distort data distributions, ensuring valid evaluation.
+
+> **🚀 Recommendation:** Random Forest (Hyperparameter-Tuned) is recommended due to high accuracy, excellent generalization, and robustness.
+
+---
+
+## 📂 Repository Structure
+```bash
+├── data/
+│   ├── dataset_train_resampled.csv
+│   └── dataset_test.csv
+├── notebooks/
+│   ├── DataUnderstanding.ipynb
+│   ├── DataPreparation.ipynb
+│   └── ModelBuilding.ipynb
+└── README.md
+```
+
+---
+
+✨ **Happy Modeling!** ✨
