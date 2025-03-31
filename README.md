@@ -48,17 +48,12 @@ If you use this work or find it helpful, please cite our paper:
 
 > **Predictive Maintenance**  
 > DHBW Karlsruhe, Fakultät Wirtschaft  
-> Daniel Weissenberger, Eduardo Stein Mössner, Jonas Sigmund  
-> Supervised by: Prof. Dr. Jennifer Schoch  
-> *25.03.2025*
+> *31.03.2025*
 
 ---
 
 ## 📬 Contact
-For any inquiries, please reach out to:
-- Daniel Weissenberger
-- Eduardo Stein Mössner
-- Jonas Sigmund
+For any inquiries, please reach out to us
 
 ---
 
